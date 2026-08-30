@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"/>
+<title>Menu – OFDS</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+<style>
+.cart-summary{position:sticky;top:1rem}
+.item-row{display:flex;align-items:center;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid var(--border)}
+.item-row:last-child{border-bottom:none}
+#cartTotal{font-size:1.3rem;font-weight:700;color:var(--primary)}
+.pay-method-tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem}
+.pm-tab{flex:1;padding:6px 4px;text-align:center;border:1.5px solid var(--border);border-radius:6px;
+  cursor:pointer;font-size:.8rem;transition:all .15s;min-width:60px}
+.pm-tab.active{border-color:var(--primary);background:#FFF5F0;color:var(--primary);font-weight:600}
+</style>
+</head>
+<body>
+<div class="navbar">
+  <a class="brand" href="#">🍔 OFDS</a>
+  <nav>
+    <a th:href="@{/customer/dashboard}">Home</a>
+    <a th:href="@{/customer/restaurants}" class="active">Restaurants</a>
+    <a th:href="@{/customer/orders}">My Orders</a>
+    <a th:href="@{/customer/profile}">Profile</a>
+  </nav>
+  <form method="post" th:action="@{/logout}" style="display:inline">
+    <button class="logout">Logout</button>
+  </form>
+</div>
+
+<div class="container">
+  <a th:href="@{/customer/restaurants}" class="btn btn-outline btn-sm" style="margin-bottom:1rem">← Back</a>
+  <div th:if="${param.error}" class="alert alert-danger">Something went wrong. Please try again.</div>
+
+  <div class="grid-2">
+    <!-- Menu items -->
+    <div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <h2 th:text="${restaurant.name}">Restaurant</h2>
+            <p style="color:var(--text-muted);font-size:.88rem" th:text="'📍 ' + ${restaurant.address}"></p>
+          </div>
+          <span class="rating" th:text="${#numbers.formatDecimal(restaurant.rating,1,1)} + ' ★'">0.0 ★</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Menu</div>
+        <div th:if="${#lists.isEmpty(menuItems)}" class="empty-state" style="padding:1.5rem">
+          <p>No items available right now.</p>
+        </div>
+        <div th:each="item : ${menuItems}" class="item-row">
+          <div>
+            <div class="item-name" th:text="${item.name}">Item</div>
+            <div class="item-price" th:text="'₹' + ${#numbers.formatDecimal(item.price,1,2)}">₹0</div>
+          </div>
+          <input type="number" class="menu-qty" min="0" max="10" value="0"
+                 th:data-id="${item.itemId}"
+                 th:data-price="${item.price}"
+                 th:data-name="${item.name}"
+                 onchange="updateCart(this)"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cart + checkout -->
+    <div class="cart-summary">
+      <div class="card">
+        <div class="card-title">🛒 Your Cart</div>
+        <div id="cartItems" style="min-height:60px;color:var(--text-muted);font-size:.9rem">
+          No items added yet.
+        </div>
+        <hr style="margin:.8rem 0;border-color:var(--border)"/>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <span style="font-weight:500">Total</span>
+          <span id="cartTotal">₹0.00</span>
+        </div>
+
+        <div class="form-group">
+          <label>Payment Method</label>
+          <div class="pay-method-tabs">
+            <div class="pm-tab active" data-method="UPI">UPI</div>
+            <div class="pm-tab" data-method="CREDIT_CARD">Card</div>
+            <div class="pm-tab" data-method="DEBIT_CARD">Debit</div>
+            <div class="pm-tab" data-method="WALLET">Wallet</div>
+          </div>
+        </div>
+
+        <!-- Hidden form to POST to /payment/checkout -->
+        <form id="orderForm" method="post" th:action="@{/payment/checkout}">
+          <input type="hidden" name="restaurantId" th:value="${restaurant.restaurantId}"/>
+          <input type="hidden" name="paymentMethod" id="paymentMethodInput" value="UPI"/>
+          <div id="cartInputs"></div>
+          <button type="button" class="btn btn-primary" style="width:100%" onclick="submitOrder()">
+            🔒 Proceed to Pay
+          </button>
+        </form>
+        <p style="font-size:.74rem;color:var(--text-muted);text-align:center;margin-top:.4rem">
+          Secure checkout · All payment methods accepted
+        </p>
+      </div>
+
+      <!-- Rate restaurant -->
+      <div class="card" style="margin-top:1rem">
+        <div class="card-title">Rate this restaurant</div>
+        <form method="post" th:action="@{/customer/restaurant/{id}/rate(id=${restaurant.restaurantId})}">
+          <div style="display:flex;gap:.5rem;align-items:center">
+            <input type="number" name="rating" min="1" max="5" step="0.5" value="4" style="width:80px"/>
+            <button class="btn btn-outline btn-sm" type="submit">Submit Rating</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const cart = {};
+
+// Payment method tab selection
+document.querySelectorAll('.pm-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.pm-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('paymentMethodInput').value = this.dataset.method;
+  });
+});
+
+function updateCart(input) {
+  const id = input.dataset.id, qty = parseInt(input.value)||0,
+        price = parseFloat(input.dataset.price), name = input.dataset.name;
+  if (qty > 0) cart[id] = {name, price, qty}; else delete cart[id];
+  renderCart();
+}
+
+function renderCart() {
+  const keys = Object.keys(cart);
+  const itemsDiv = document.getElementById('cartItems');
+  const inputsDiv = document.getElementById('cartInputs');
+  if (!keys.length) {
+    itemsDiv.innerHTML = '<span style="color:var(--text-muted)">No items added yet.</span>';
+    document.getElementById('cartTotal').textContent = '₹0.00';
+    inputsDiv.innerHTML = '';
+    return;
+  }
+  let html = '', inputHtml = '', total = 0;
+  keys.forEach(id => {
+    const {name, price, qty} = cart[id];
+    const sub = price * qty; total += sub;
+    html += `<div style="display:flex;justify-content:space-between;font-size:.88rem;padding:3px 0">
+      <span>${name} × ${qty}</span><span>₹${sub.toFixed(2)}</span></div>`;
+    inputHtml += `<input type="hidden" name="itemIds" value="${id}"/>
+                  <input type="hidden" name="quantities" value="${qty}"/>`;
+  });
+  itemsDiv.innerHTML = html;
+  document.getElementById('cartTotal').textContent = '₹' + total.toFixed(2);
+  inputsDiv.innerHTML = inputHtml;
+}
+
+function submitOrder() {
+  if (!Object.keys(cart).length) { alert('Please add at least one item.'); return; }
+  document.getElementById('orderForm').submit();
+}
+</script>
+</body>
+</html>

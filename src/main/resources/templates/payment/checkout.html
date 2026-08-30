@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"/>
+<title>Secure Payment – OFDS Pay</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+<style>
+/* ── Layout ── */
+body { background: #f0f2f5; }
+.pay-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.pay-shell { width: 100%; max-width: 460px; }
+
+/* ── Header bar ── */
+.pay-header { background: #1a1f36; border-radius: 12px 12px 0 0; padding: 1rem 1.4rem;
+  display: flex; align-items: center; justify-content: space-between; }
+.pay-header .brand { color: #fff; font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: .5rem; }
+.pay-header .brand span { font-size: .7rem; background: #00c48c; color: #fff; padding: 2px 7px; border-radius: 10px; }
+.pay-header .secure { color: #a0a8c0; font-size: .78rem; display: flex; align-items: center; gap: .3rem; }
+
+/* ── Amount banner ── */
+.pay-amount { background: linear-gradient(135deg, #FF6B35, #e05520); color: #fff;
+  padding: 1.1rem 1.4rem; display: flex; justify-content: space-between; align-items: center; }
+.pay-amount .label { font-size: .83rem; opacity: .85; }
+.pay-amount .amount { font-size: 1.8rem; font-weight: 700; }
+.pay-amount .order-info { font-size: .78rem; opacity: .8; }
+
+/* ── Body card ── */
+.pay-body { background: #fff; border-radius: 0 0 12px 12px; padding: 1.4rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,.12); }
+
+/* ── Method tabs ── */
+.method-tabs { display: flex; border-bottom: 2px solid #e8eaf0; margin-bottom: 1.2rem; }
+.method-tab { flex: 1; padding: .7rem; text-align: center; cursor: pointer; font-size: .85rem;
+  color: #718096; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all .2s; font-weight: 500; }
+.method-tab.active { color: #FF6B35; border-bottom-color: #FF6B35; }
+.method-tab:hover { color: #FF6B35; }
+
+/* ── Panels ── */
+.method-panel { display: none; }
+.method-panel.active { display: block; }
+
+/* ── Card UI ── */
+.card-preview { background: linear-gradient(135deg, #1a1f36, #2d3561);
+  border-radius: 12px; padding: 1.2rem; color: #fff; margin-bottom: 1.2rem; position: relative; overflow: hidden; }
+.card-preview::before { content: ''; position: absolute; top: -30px; right: -30px;
+  width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,.06); }
+.card-preview::after { content: ''; position: absolute; bottom: -20px; left: 40px;
+  width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,.04); }
+.card-chip { width: 36px; height: 28px; background: linear-gradient(135deg, #d4af37, #f0d060);
+  border-radius: 5px; margin-bottom: .8rem; }
+.card-number-display { font-size: 1.1rem; letter-spacing: 3px; font-family: monospace; margin-bottom: .8rem; opacity: .9; }
+.card-bottom { display: flex; justify-content: space-between; font-size: .78rem; opacity: .7; }
+
+.card-input-group { position: relative; margin-bottom: .9rem; }
+.card-input-group label { font-size: .82rem; font-weight: 600; color: #4a5568; margin-bottom: .3rem; display: block; }
+.card-input-group input { width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0;
+  border-radius: 8px; font-size: .95rem; font-family: monospace; letter-spacing: 1px; transition: border-color .2s; }
+.card-input-group input:focus { outline: none; border-color: #FF6B35; }
+.card-input-group .card-icon { position: absolute; right: 12px; top: 50%; transform: translateY(4px); font-size: 1.1rem; }
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
+
+/* ── UPI panel ── */
+.upi-apps { display: grid; grid-template-columns: repeat(4, 1fr); gap: .6rem; margin-bottom: 1rem; }
+.upi-app { border: 1.5px solid #e2e8f0; border-radius: 10px; padding: .7rem .4rem;
+  text-align: center; cursor: pointer; transition: all .15s; }
+.upi-app:hover, .upi-app.selected { border-color: #FF6B35; background: #fff8f5; }
+.upi-app .icon { font-size: 1.5rem; margin-bottom: .3rem; }
+.upi-app .name { font-size: .72rem; color: #4a5568; font-weight: 500; }
+.upi-divider { text-align: center; color: #a0aec0; font-size: .82rem; margin: .8rem 0;
+  position: relative; }
+.upi-divider::before, .upi-divider::after { content: ''; position: absolute; top: 50%;
+  width: 42%; height: 1px; background: #e2e8f0; }
+.upi-divider::before { left: 0; }
+.upi-divider::after { right: 0; }
+
+/* ── Wallet panel ── */
+.wallet-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1rem; }
+.wallet-item { display: flex; align-items: center; gap: .8rem; padding: .75rem 1rem;
+  border: 1.5px solid #e2e8f0; border-radius: 10px; cursor: pointer; transition: all .15s; }
+.wallet-item:hover, .wallet-item.selected { border-color: #FF6B35; background: #fff8f5; }
+.wallet-item .w-icon { font-size: 1.4rem; }
+.wallet-item .w-info .w-name { font-weight: 600; font-size: .9rem; }
+.wallet-item .w-info .w-bal { font-size: .78rem; color: #718096; }
+.wallet-item .w-check { margin-left: auto; color: #FF6B35; display: none; }
+.wallet-item.selected .w-check { display: block; }
+
+/* ── Processing overlay ── */
+#processingOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(26,31,54,.92); z-index: 1000; align-items: center; justify-content: center; }
+#processingOverlay.show { display: flex; }
+.processing-box { background: #fff; border-radius: 16px; padding: 2.5rem 2rem;
+  text-align: center; max-width: 300px; width: 90%; }
+.processing-spinner { width: 56px; height: 56px; border: 4px solid #e2e8f0;
+  border-top-color: #FF6B35; border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 1.2rem; }
+.processing-steps { text-align: left; margin-top: 1.2rem; }
+.p-step { display: flex; align-items: center; gap: .6rem; padding: .35rem 0;
+  font-size: .85rem; color: #a0aec0; transition: color .3s; }
+.p-step.done { color: #38a169; }
+.p-step.active { color: #2d3748; font-weight: 500; }
+.p-step .dot { width: 8px; height: 8px; border-radius: 50%; background: #e2e8f0; flex-shrink: 0; transition: background .3s; }
+.p-step.done .dot { background: #38a169; }
+.p-step.active .dot { background: #FF6B35; animation: pulse 1s infinite; }
+
+/* ── Result screens ── */
+#resultScreen { display: none; }
+#resultScreen.show { display: block; }
+.result-icon { font-size: 3.5rem; margin-bottom: .8rem; }
+.result-title { font-size: 1.3rem; font-weight: 700; margin-bottom: .4rem; }
+.result-sub { color: #718096; font-size: .9rem; margin-bottom: 1.2rem; }
+.txn-box { background: #f7f9fc; border-radius: 8px; padding: .9rem; font-size: .83rem; margin-bottom: 1.2rem; }
+.txn-row { display: flex; justify-content: space-between; padding: .2rem 0; }
+.txn-row .key { color: #718096; }
+.txn-row .val { font-weight: 500; }
+
+/* ── Pay button ── */
+.pay-btn { width: 100%; padding: .9rem; background: #FF6B35; color: #fff; border: none;
+  border-radius: 9px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all .15s;
+  display: flex; align-items: center; justify-content: center; gap: .5rem; }
+.pay-btn:hover { background: #e05520; transform: translateY(-1px); }
+.pay-btn:active { transform: translateY(0); }
+.lock-icon { font-size: .9rem; opacity: .8; }
+
+.trust-row { display: flex; justify-content: center; gap: 1.2rem; margin-top: .8rem; }
+.trust-badge { display: flex; align-items: center; gap: .3rem; font-size: .72rem; color: #a0aec0; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+</style>
+</head>
+<body>
+<div class="pay-wrap">
+  <div class="pay-shell">
+
+    <!-- Gateway header -->
+    <div class="pay-header">
+      <div class="brand">🔐 OFDS Pay <span>SECURE</span></div>
+      <div class="secure">🔒 256-bit SSL</div>
+    </div>
+
+    <!-- Amount banner -->
+    <div class="pay-amount">
+      <div>
+        <div class="label">Amount to Pay</div>
+        <div class="amount">₹<span th:text="${#numbers.formatDecimal(order.totalAmount,1,2)}">0.00</span></div>
+        <div class="order-info">Order #<span th:text="${order.orderId}"></span> · <span th:text="${order.restaurant.name}"></span></div>
+      </div>
+      <div style="font-size:2rem">🍽️</div>
+    </div>
+
+    <!-- Payment body -->
+    <div class="pay-body">
+
+      <!-- Method tabs -->
+      <div class="method-tabs">
+        <div class="method-tab active" onclick="switchTab('card',this)">💳 Card</div>
+        <div class="method-tab" onclick="switchTab('upi',this)">📱 UPI</div>
+        <div class="method-tab" onclick="switchTab('wallet',this)">👛 Wallet</div>
+        <div class="method-tab" onclick="switchTab('netbanking',this)">🏦 Net Banking</div>
+      </div>
+
+      <!-- Main form area -->
+      <div id="mainForm">
+
+        <!-- ══ CARD PANEL ══ -->
+        <div id="panel-card" class="method-panel active">
+          <div class="card-preview">
+            <div class="card-chip"></div>
+            <div class="card-number-display" id="previewNumber">•••• •••• •••• ••••</div>
+            <div class="card-bottom">
+              <div><div style="font-size:.6rem;opacity:.6;margin-bottom:2px">CARD HOLDER</div><span id="previewName">YOUR NAME</span></div>
+              <div><div style="font-size:.6rem;opacity:.6;margin-bottom:2px">EXPIRES</div><span id="previewExpiry">MM/YY</span></div>
+            </div>
+          </div>
+
+          <div class="card-input-group">
+            <label>Card Number</label>
+            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19"
+                   oninput="formatCard(this)" style="padding-right:40px"/>
+            <span class="card-icon" id="cardTypeIcon">💳</span>
+          </div>
+          <div class="card-input-group">
+            <label>Cardholder Name</label>
+            <input type="text" id="cardName" placeholder="Name on card"
+                   oninput="document.getElementById('previewName').textContent=this.value.toUpperCase()||'YOUR NAME'"/>
+          </div>
+          <div class="row-2">
+            <div class="card-input-group" style="margin:0">
+              <label>Expiry Date</label>
+              <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(this)"/>
+            </div>
+            <div class="card-input-group" style="margin:0">
+              <label>CVV</label>
+              <input type="password" id="cardCvv" placeholder="•••" maxlength="3"/>
+            </div>
+          </div>
+          <input type="hidden" id="cardInput" value=""/>
+        </div>
+
+        <!-- ══ UPI PANEL ══ -->
+        <div id="panel-upi" class="method-panel">
+          <p style="font-size:.88rem;color:#718096;margin-bottom:.8rem">Select your UPI app</p>
+          <div class="upi-apps">
+            <div class="upi-app" onclick="selectUpiApp(this,'gpay')">
+              <div class="icon">🟦</div><div class="name">Google Pay</div>
+            </div>
+            <div class="upi-app" onclick="selectUpiApp(this,'phonepe')">
+              <div class="icon">🟣</div><div class="name">PhonePe</div>
+            </div>
+            <div class="upi-app" onclick="selectUpiApp(this,'paytm')">
+              <div class="icon">🔵</div><div class="name">Paytm</div>
+            </div>
+            <div class="upi-app" onclick="selectUpiApp(this,'bhim')">
+              <div class="icon">🇮🇳</div><div class="name">BHIM</div>
+            </div>
+          </div>
+          <div class="upi-divider">or enter UPI ID</div>
+          <div class="card-input-group">
+            <label>UPI ID</label>
+            <input type="text" id="upiId" placeholder="yourname@upi"/>
+          </div>
+        </div>
+
+        <!-- ══ WALLET PANEL ══ -->
+        <div id="panel-wallet" class="method-panel">
+          <div class="wallet-list">
+            <div class="wallet-item" onclick="selectWallet(this)">
+              <div class="w-icon">💙</div>
+              <div class="w-info"><div class="w-name">Paytm Wallet</div><div class="w-bal">Balance: ₹1,250.00</div></div>
+              <div class="w-check">✓</div>
+            </div>
+            <div class="wallet-item" onclick="selectWallet(this)">
+              <div class="w-icon">🟢</div>
+              <div class="w-info"><div class="w-name">Amazon Pay</div><div class="w-bal">Balance: ₹340.00</div></div>
+              <div class="w-check">✓</div>
+            </div>
+            <div class="wallet-item" onclick="selectWallet(this)">
+              <div class="w-icon">🔴</div>
+              <div class="w-info"><div class="w-name">Mobikwik</div><div class="w-bal">Balance: ₹89.50</div></div>
+              <div class="w-check">✓</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ NET BANKING PANEL ══ -->
+        <div id="panel-netbanking" class="method-panel">
+          <div class="card-input-group">
+            <label>Select Your Bank</label>
+            <select id="bankSelect" style="padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;width:100%;font-size:.92rem">
+              <option value="">-- Choose a bank --</option>
+              <option>State Bank of India</option>
+              <option>HDFC Bank</option>
+              <option>ICICI Bank</option>
+              <option>Axis Bank</option>
+              <option>Kotak Mahindra Bank</option>
+              <option>Punjab National Bank</option>
+              <option>Bank of Baroda</option>
+              <option>Canara Bank</option>
+            </select>
+          </div>
+          <div class="card-input-group">
+            <label>User ID / Customer ID</label>
+            <input type="text" id="netbankUser" placeholder="Enter your net banking user ID"/>
+          </div>
+          <div class="card-input-group">
+            <label>Password</label>
+            <input type="password" id="netbankPass" placeholder="Net banking password"/>
+          </div>
+        </div>
+
+        <!-- Pay button -->
+        <button class="pay-btn" id="payBtn" onclick="initiatePayment()">
+          <span class="lock-icon">🔒</span>
+          Pay ₹<span th:text="${#numbers.formatDecimal(order.totalAmount,1,2)}">0.00</span> Securely
+        </button>
+        <div class="trust-row">
+          <div class="trust-badge">🛡️ PCI DSS Secure</div>
+          <div class="trust-badge">🔐 End-to-end encrypted</div>
+          <div class="trust-badge">✅ Bank-grade security</div>
+        </div>
+      </div>
+
+      <!-- ══ RESULT SCREEN ══ -->
+      <div id="resultScreen">
+        <!-- Injected by JS -->
+      </div>
+
+    </div><!-- /pay-body -->
+  </div>
+</div>
+
+<!-- Processing overlay -->
+<div id="processingOverlay">
+  <div class="processing-box">
+    <div class="processing-spinner"></div>
+    <div style="font-weight:600;margin-bottom:.3rem">Processing Payment</div>
+    <div style="font-size:.83rem;color:#718096">Please do not close this window</div>
+    <div class="processing-steps">
+      <div class="p-step active" id="step1"><div class="dot"></div> Connecting to bank</div>
+      <div class="p-step" id="step2"><div class="dot"></div> Authenticating</div>
+      <div class="p-step" id="step3"><div class="dot"></div> Verifying details</div>
+      <div class="p-step" id="step4"><div class="dot"></div> Confirming payment</div>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+const ORDER_ID      = /*[[${order.orderId}]]*/ 0;
+const ORDER_AMOUNT  = /*[[${order.totalAmount}]]*/ 0;
+const REST_NAME     = /*[[${order.restaurant.name}]]*/ '';
+const PAYMENT_METHOD = /*[[${paymentMethod}]]*/ 'UPI';
+
+let activeTab    = 'card';
+let selectedUpi  = '';
+let selectedWal  = '';
+
+/* ── Tab switching ── */
+function switchTab(tab, el) {
+  activeTab = tab;
+  document.querySelectorAll('.method-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.method-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  el.classList.add('active');
+}
+
+/* ── Card formatting ── */
+function formatCard(input) {
+  let val = input.value.replace(/\D/g,'').substring(0,16);
+  input.value = val.replace(/(.{4})/g,'$1 ').trim();
+  document.getElementById('previewNumber').textContent =
+    (val + '################').substring(0,16).replace(/(.{4})/g,'$1 ').trim().replace(/#/g,'•');
+  // Card type icon
+  const icon = document.getElementById('cardTypeIcon');
+  if (val.startsWith('4')) icon.textContent = '💙'; // Visa
+  else if (val.startsWith('5')) icon.textContent = '🟠'; // Mastercard
+  else if (val.startsWith('3')) icon.textContent = '🟢'; // Amex
+  else icon.textContent = '💳';
+}
+function formatExpiry(input) {
+  let val = input.value.replace(/\D/g,'');
+  if (val.length > 2) val = val.substring(0,2) + '/' + val.substring(2,4);
+  input.value = val;
+  document.getElementById('previewExpiry').textContent = input.value || 'MM/YY';
+}
+
+/* ── UPI app selection ── */
+function selectUpiApp(el, app) {
+  document.querySelectorAll('.upi-app').forEach(a => a.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedUpi = app + '@upi';
+  document.getElementById('upiId').value = selectedUpi;
+}
+
+/* ── Wallet selection ── */
+function selectWallet(el) {
+  document.querySelectorAll('.wallet-item').forEach(w => w.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedWal = el.querySelector('.w-name').textContent;
+}
+
+/* ── Get input for processing ── */
+function getInput() {
+  if (activeTab === 'card')       return document.getElementById('cardNumber').value.replace(/\s/g,'') || '0';
+  if (activeTab === 'upi')        return document.getElementById('upiId').value || selectedUpi || 'test@upi';
+  if (activeTab === 'wallet')     return selectedWal || 'wallet';
+  if (activeTab === 'netbanking') return document.getElementById('netbankUser').value || 'user';
+  return 'default';
+}
+
+/* ── Validate before pay ── */
+function validate() {
+  if (activeTab === 'card') {
+    const num = document.getElementById('cardNumber').value.replace(/\s/g,'');
+    if (num.length < 16) { alert('Please enter a valid 16-digit card number.'); return false; }
+    if (!document.getElementById('cardName').value.trim()) { alert('Please enter cardholder name.'); return false; }
+    if (document.getElementById('cardExpiry').value.length < 5) { alert('Please enter expiry date.'); return false; }
+    if (document.getElementById('cardCvv').value.length < 3)  { alert('Please enter CVV.'); return false; }
+  }
+  if (activeTab === 'upi') {
+    const upi = document.getElementById('upiId').value.trim();
+    if (!upi && !selectedUpi) { alert('Please select a UPI app or enter your UPI ID.'); return false; }
+  }
+  if (activeTab === 'wallet' && !selectedWal) { alert('Please select a wallet.'); return false; }
+  if (activeTab === 'netbanking') {
+    if (!document.getElementById('bankSelect').value) { alert('Please select your bank.'); return false; }
+    if (!document.getElementById('netbankUser').value.trim()) { alert('Please enter user ID.'); return false; }
+    if (!document.getElementById('netbankPass').value.trim()) { alert('Please enter password.'); return false; }
+  }
+  return true;
+}
+
+/* ── Processing steps animation ── */
+async function runSteps() {
+  const steps = ['step1','step2','step3','step4'];
+  const delays = [1200, 1000, 1400, 900];
+  for (let i = 0; i < steps.length; i++) {
+    await new Promise(r => setTimeout(r, delays[i]));
+    document.getElementById(steps[i]).className = 'p-step done';
+    if (i + 1 < steps.length) {
+      document.getElementById(steps[i+1]).className = 'p-step active';
+    }
+  }
+}
+
+/* ── Main payment initiator ── */
+async function initiatePayment() {
+  if (!validate()) return;
+
+  // Show processing overlay
+  document.getElementById('processingOverlay').classList.add('show');
+  document.getElementById('payBtn').disabled = true;
+
+  // Run animation steps in parallel with actual backend call
+  runSteps();
+
+  // Wait minimum 4.5s for realistic feel
+  const [result] = await Promise.all([
+    processPayment(),
+    new Promise(r => setTimeout(r, 4800))
+  ]);
+
+  document.getElementById('processingOverlay').classList.remove('show');
+  showResult(result);
+}
+
+/* ── Backend call ── */
+async function processPayment() {
+  const formData = new URLSearchParams({
+    orderId: ORDER_ID,
+    cardOrUpiInput: getInput()
+  });
+  try {
+    const res  = await fetch('/payment/process', { method: 'POST', body: formData });
+    return await res.json();
+  } catch(e) {
+    return { status: 'failed', orderId: ORDER_ID, txnId: 'ERR' };
+  }
+}
+
+/* ── Show result ── */
+function showResult(data) {
+  const success = data.status === 'success';
+  document.getElementById('mainForm').style.display = 'none';
+  const screen = document.getElementById('resultScreen');
+  screen.classList.add('show');
+
+  const now = new Date().toLocaleString('en-IN');
+
+  if (success) {
+    screen.innerHTML = `
+      <div style="text-align:center;padding:1rem 0">
+        <div class="result-icon">✅</div>
+        <div class="result-title" style="color:#38a169">Payment Successful!</div>
+        <div class="result-sub">Your order has been placed.</div>
+        <div class="txn-box">
+          <div class="txn-row"><span class="key">Transaction ID</span><span class="val">${data.txnId}</span></div>
+          <div class="txn-row"><span class="key">Amount</span><span class="val">₹${ORDER_AMOUNT.toFixed(2)}</span></div>
+          <div class="txn-row"><span class="key">Restaurant</span><span class="val">${REST_NAME}</span></div>
+          <div class="txn-row"><span class="key">Order ID</span><span class="val">#${ORDER_ID}</span></div>
+          <div class="txn-row"><span class="key">Date & Time</span><span class="val">${now}</span></div>
+          <div class="txn-row"><span class="key">Status</span><span class="val" style="color:#38a169">✓ COMPLETED</span></div>
+        </div>
+        <a href="/customer/order/${ORDER_ID}?success=true" class="pay-btn" style="text-decoration:none;display:flex">
+          View Order Details →
+        </a>
+        <div style="margin-top:.8rem;font-size:.8rem;color:#a0aec0">
+          A confirmation has been recorded for this transaction.
+        </div>
+      </div>`;
+  } else {
+    screen.innerHTML = `
+      <div style="text-align:center;padding:1rem 0">
+        <div class="result-icon">❌</div>
+        <div class="result-title" style="color:#e53e3e">Payment Failed</div>
+        <div class="result-sub">Your transaction could not be completed.</div>
+        <div class="txn-box">
+          <div class="txn-row"><span class="key">Transaction ID</span><span class="val">${data.txnId}</span></div>
+          <div class="txn-row"><span class="key">Amount</span><span class="val">₹${ORDER_AMOUNT.toFixed(2)}</span></div>
+          <div class="txn-row"><span class="key">Reason</span><span class="val" style="color:#e53e3e">Transaction declined</span></div>
+          <div class="txn-row"><span class="key">Status</span><span class="val" style="color:#e53e3e">✗ FAILED</span></div>
+        </div>
+        <button class="pay-btn" onclick="retryPayment()" style="background:#2d3748">
+          Try Again
+        </button>
+        <a href="/customer/orders" style="display:block;margin-top:.7rem;font-size:.85rem;color:#a0aec0;text-align:center">
+          Back to Orders
+        </a>
+      </div>`;
+  }
+}
+
+function retryPayment() {
+  document.getElementById('mainForm').style.display = 'block';
+  document.getElementById('resultScreen').classList.remove('show');
+  document.getElementById('resultScreen').innerHTML = '';
+  document.getElementById('payBtn').disabled = false;
+  // Reset steps
+  ['step1','step2','step3','step4'].forEach((s,i) => {
+    document.getElementById(s).className = i===0 ? 'p-step active' : 'p-step';
+  });
+}
+</script>
+</body>
+</html>

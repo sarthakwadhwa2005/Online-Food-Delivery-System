@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Dashboard – OFDS</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div class="navbar">
+  <a class="brand" href="#">🍔 OFDS</a>
+  <nav>
+    <a th:href="@{/customer/dashboard}" class="active">Home</a>
+    <a th:href="@{/customer/restaurants}">Restaurants</a>
+    <a th:href="@{/customer/orders}">My Orders</a>
+    <a th:href="@{/customer/profile}">Profile</a>
+  </nav>
+  <form method="post" th:action="@{/logout}" style="display:inline">
+    <button class="logout">Logout</button>
+  </form>
+</div>
+
+<div class="container">
+  <p class="page-title">Welcome back, <span th:text="${customer.name}">User</span> 👋</p>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-val" th:text="${#lists.size(restaurants)}">0</div>
+      <div class="stat-label">Restaurants Available</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" th:text="${orderCount}">0</div>
+      <div class="stat-label">My Orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">🛵</div>
+      <div class="stat-label">Fast Delivery</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Quick Search</div>
+    <form th:action="@{/customer/restaurants}" method="get" class="search-bar">
+      <input type="text" name="search" placeholder="Search restaurants by name…"/>
+      <button class="btn btn-primary" type="submit">Search</button>
+    </form>
+  </div>
+
+  <p class="page-title" style="margin-top:1.2rem">Available Restaurants</p>
+  <div class="grid-3">
+    <!-- FIX: use <a> tag wrapping the card instead of th:onclick -->
+    <a th:each="r : ${restaurants}"
+       th:href="@{/customer/restaurant/{id}/menu(id=${r.restaurantId})}"
+       class="rest-card" style="text-decoration:none;display:block">
+      <h3 th:text="${r.name}">Restaurant</h3>
+      <p class="address">📍 <span th:text="${r.address}">Address</span></p>
+      <span class="rating" th:text="${#numbers.formatDecimal(r.rating,1,1)} + ' ★'">0.0 ★</span>
+      <div style="margin-top:.7rem">
+        <span class="btn btn-primary btn-sm">View Menu →</span>
+      </div>
+    </a>
+  </div>
+  <div th:if="${#lists.isEmpty(restaurants)}" class="empty-state">
+    <div class="icon">🍽️</div>
+    <p>No restaurants available yet.</p>
+  </div>
+</div>
+</body>
+</html>

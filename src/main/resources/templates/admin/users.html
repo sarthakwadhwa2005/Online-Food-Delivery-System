@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Manage Users – OFDS</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div class="navbar">
+  <a class="brand" href="#">🍔 OFDS</a>
+  <nav>
+    <a th:href="@{/admin/dashboard}">Dashboard</a>
+    <a th:href="@{/admin/users}" class="active">Users</a>
+    <a th:href="@{/admin/restaurants}">Restaurants</a>
+    <a th:href="@{/admin/orders}">Orders</a>
+    <a th:href="@{/admin/reports}">Reports</a>
+  </nav>
+  <form method="post" th:action="@{/logout}" style="display:inline">
+    <button class="logout">Logout</button>
+  </form>
+</div>
+<div class="container">
+  <p class="page-title">Manage Users</p>
+  <div th:if="${param.deleted}" class="alert alert-info">User deleted.</div>
+  <div class="card">
+    <table>
+      <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr th:each="user : ${users}">
+          <td th:text="${user.userId}"></td>
+          <td th:text="${user.name}"></td>
+          <td th:text="${user.email}"></td>
+          <td th:text="${user.phone}"></td>
+          <td><span class="badge badge-placed" th:text="${user.userType}"></span></td>
+          <td>
+            <form method="post" th:action="@{/admin/users/{id}/delete(id=${user.userId})}" style="display:inline">
+              <button class="btn btn-danger btn-sm" onclick="return confirm('Delete user?')">Delete</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

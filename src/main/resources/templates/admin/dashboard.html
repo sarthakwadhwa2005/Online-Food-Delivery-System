@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Admin Dashboard – OFDS</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div class="navbar">
+  <a class="brand" href="#">🍔 OFDS</a>
+  <nav>
+    <a th:href="@{/admin/dashboard}" class="active">Dashboard</a>
+    <a th:href="@{/admin/users}">Users</a>
+    <a th:href="@{/admin/restaurants}">Restaurants</a>
+    <a th:href="@{/admin/orders}">Orders</a>
+    <a th:href="@{/admin/reports}">Reports</a>
+  </nav>
+  <form method="post" th:action="@{/logout}" style="display:inline">
+    <button class="logout">Logout</button>
+  </form>
+</div>
+<div class="container">
+  <p class="page-title">Admin Dashboard</p>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-val" th:text="${userCount}">0</div>
+      <div class="stat-label">Total Users</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" th:text="${restaurantCount}">0</div>
+      <div class="stat-label">Restaurants</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" th:text="${orderCount}">0</div>
+      <div class="stat-label">Total Orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" th:text="'₹' + ${#numbers.formatDecimal(totalRevenue,1,0)}">₹0</div>
+      <div class="stat-label">Total Revenue</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Recent Orders</div>
+    <div th:if="${#lists.isEmpty(recentOrders)}" class="empty-state" style="padding:1rem"><p>No orders yet.</p></div>
+    <table th:if="${!#lists.isEmpty(recentOrders)}">
+      <thead><tr><th>#</th><th>Customer</th><th>Restaurant</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr th:each="order : ${recentOrders}">
+          <td th:text="${order.orderId}"></td>
+          <td th:text="${order.customer.name}"></td>
+          <td th:text="${order.restaurant.name}"></td>
+          <td th:text="'₹' + ${#numbers.formatDecimal(order.totalAmount,1,2)}"></td>
+          <td><span th:class="${'badge badge-' + #strings.toLowerCase(order.status)}"
+                    th:text="${order.status}"></span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid-2" style="margin-top:1rem">
+    <a th:href="@{/admin/users}"       class="card" style="text-decoration:none;text-align:center;padding:1.5rem;cursor:pointer">
+      <div style="font-size:2rem">👥</div><div style="font-weight:600;margin-top:.5rem">Manage Users</div>
+    </a>
+    <a th:href="@{/admin/reports}"     class="card" style="text-decoration:none;text-align:center;padding:1.5rem;cursor:pointer">
+      <div style="font-size:2rem">📊</div><div style="font-weight:600;margin-top:.5rem">Generate Reports</div>
+    </a>
+  </div>
+</div>
+</body>
+</html>

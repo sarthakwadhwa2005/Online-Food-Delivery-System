@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>My Orders – OFDS</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div class="navbar">
+  <a class="brand" href="#">🍔 OFDS</a>
+  <nav>
+    <a th:href="@{/customer/dashboard}">Home</a>
+    <a th:href="@{/customer/restaurants}">Restaurants</a>
+    <a th:href="@{/customer/orders}" class="active">My Orders</a>
+    <a th:href="@{/customer/profile}">Profile</a>
+  </nav>
+  <form method="post" th:action="@{/logout}" style="display:inline">
+    <button class="logout">Logout</button>
+  </form>
+</div>
+<div class="container">
+  <p class="page-title">My Orders</p>
+  <div th:if="${param.cancelled}" class="alert alert-info">Order cancelled.</div>
+
+  <div th:if="${#lists.isEmpty(orders)}" class="empty-state">
+    <div class="icon">📦</div>
+    <p>No orders yet. <a th:href="@{/customer/restaurants}" style="color:var(--primary)">Order now!</a></p>
+  </div>
+
+  <div th:each="order : ${orders}" class="card" style="margin-bottom:.8rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+      <div>
+        <strong>Order #<span th:text="${order.orderId}"></span></strong>
+        — <span th:text="${order.restaurant.name}"></span>
+        <div style="font-size:.85rem;color:var(--text-muted)" th:text="${order.orderDate}"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:.8rem">
+        <span th:class="${'badge badge-' + #strings.toLowerCase(order.status)}"
+              th:text="${order.status}"></span>
+        <strong style="color:var(--primary)" th:text="'₹' + ${#numbers.formatDecimal(order.totalAmount,1,2)}"></strong>
+        <a th:href="@{/customer/order/{id}(id=${order.orderId})}" class="btn btn-outline btn-sm">View</a>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

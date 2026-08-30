@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Owner Dashboard – OFDS</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div class="navbar">
+  <a class="brand" href="#">🍔 OFDS</a>
+  <nav>
+    <a th:href="@{/owner/dashboard}" class="active">Dashboard</a>
+    <a th:href="@{/owner/restaurants}">My Restaurants</a>
+  </nav>
+  <form method="post" th:action="@{/logout}" style="display:inline">
+    <button class="logout">Logout</button>
+  </form>
+</div>
+<div class="container">
+  <p class="page-title">Welcome, <span th:text="${owner.name}">Owner</span> 🍽️</p>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-val" th:text="${#lists.size(restaurants)}">0</div>
+      <div class="stat-label">My Restaurants</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" th:text="${pendingCount}">0</div>
+      <div class="stat-label">Pending Orders</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">My Restaurants</div>
+    <div th:if="${#lists.isEmpty(restaurants)}" class="empty-state" style="padding:1rem">
+      <p>No restaurants yet.</p>
+    </div>
+    <div th:each="r : ${restaurants}" style="display:flex;justify-content:space-between;align-items:center;padding:.7rem 0;border-bottom:1px solid var(--border)">
+      <div>
+        <strong th:text="${r.name}"></strong>
+        <div style="font-size:.84rem;color:var(--text-muted)" th:text="${r.address}"></div>
+      </div>
+      <div style="display:flex;gap:.5rem">
+        <a th:href="@{/owner/restaurant/{id}/menu(id=${r.restaurantId})}" class="btn btn-outline btn-sm">Menu</a>
+        <a th:href="@{/owner/restaurant/{id}/orders(id=${r.restaurantId})}" class="btn btn-primary btn-sm">Orders</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1rem">
+    <div class="card-title">Add New Restaurant</div>
+    <form method="post" th:action="@{/owner/restaurant/create}" style="display:flex;gap:.6rem;flex-wrap:wrap">
+      <input type="text" name="name" placeholder="Restaurant name" style="flex:1;min-width:160px" required/>
+      <input type="text" name="address" placeholder="Address" style="flex:2;min-width:200px" required/>
+      <button class="btn btn-primary" type="submit">Create</button>
+    </form>
+  </div>
+</div>
+</body>
+</html>

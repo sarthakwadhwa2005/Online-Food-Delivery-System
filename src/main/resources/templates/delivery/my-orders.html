@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>My Deliveries – OFDS</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div class="navbar">
+  <a class="brand" href="#">🍔 OFDS</a>
+  <nav>
+    <a th:href="@{/delivery/dashboard}">Dashboard</a>
+    <a th:href="@{/delivery/requests}">Requests</a>
+    <a th:href="@{/delivery/orders}" class="active">My Deliveries</a>
+    <a th:href="@{/delivery/profile}">Profile</a>
+  </nav>
+  <form method="post" th:action="@{/logout}" style="display:inline">
+    <button class="logout">Logout</button>
+  </form>
+</div>
+<div class="container">
+  <p class="page-title">My Deliveries</p>
+  <div th:if="${#lists.isEmpty(orders)}" class="empty-state">
+    <div class="icon">📦</div><p>No deliveries yet.</p>
+  </div>
+  <table th:if="${!#lists.isEmpty(orders)}">
+    <thead><tr><th>Order #</th><th>Restaurant</th><th>Customer</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr th:each="order : ${orders}">
+        <td th:text="${order.orderId}"></td>
+        <td th:text="${order.restaurant.name}"></td>
+        <td th:text="${order.customer.name}"></td>
+        <td th:text="'₹' + ${#numbers.formatDecimal(order.totalAmount,1,2)}"></td>
+        <td><span th:class="${'badge badge-' + #strings.toLowerCase(order.status)}"
+                  th:text="${order.status}"></span></td>
+        <td>
+          <form th:if="${order.status.name() == 'OUT_FOR_DELIVERY'}" method="post"
+                th:action="@{/delivery/order/{id}/deliver(id=${order.orderId})}" style="display:inline">
+            <button class="btn btn-primary btn-sm">Mark Delivered</button>
+          </form>
+          <span th:unless="${order.status.name() == 'OUT_FOR_DELIVERY'}" style="color:var(--text-muted);font-size:.85rem">—</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

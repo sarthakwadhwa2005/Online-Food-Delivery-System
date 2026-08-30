@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Manage Menu – OFDS</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div class="navbar">
+  <a class="brand" href="#">🍔 OFDS</a>
+  <nav>
+    <a th:href="@{/owner/dashboard}">Dashboard</a>
+    <a th:href="@{/owner/restaurants}" class="active">My Restaurants</a>
+  </nav>
+  <form method="post" th:action="@{/logout}" style="display:inline">
+    <button class="logout">Logout</button>
+  </form>
+</div>
+<div class="container">
+  <a th:href="@{/owner/dashboard}" class="btn btn-outline btn-sm" style="margin-bottom:1rem">← Dashboard</a>
+  <div th:if="${param.added}"   class="alert alert-success">Item added!</div>
+  <div th:if="${param.updated}" class="alert alert-success">Item updated!</div>
+  <div th:if="${param.deleted}" class="alert alert-info">Item deleted.</div>
+
+  <p class="page-title">Menu – <span th:text="${restaurant.name}"></span></p>
+
+  <!-- Add item form -->
+  <div class="card">
+    <div class="card-title">Add New Item</div>
+    <form method="post" th:action="@{/owner/restaurant/{id}/menu/add(id=${restaurant.restaurantId})}"
+          style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end">
+      <div class="form-group" style="flex:2;margin:0">
+        <label>Item Name</label>
+        <input type="text" name="name" placeholder="e.g. Paneer Tikka" required/>
+      </div>
+      <div class="form-group" style="flex:1;margin:0;min-width:120px">
+        <label>Price (₹)</label>
+        <input type="number" name="price" step="0.5" min="0" placeholder="0.00" required/>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Available</label>
+        <select name="availability">
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+      </div>
+      <button class="btn btn-success" type="submit">Add Item</button>
+    </form>
+  </div>
+
+  <!-- Menu table -->
+  <div class="card">
+    <div class="card-title">Current Menu (<span th:text="${#lists.size(menuItems)}"></span> items)</div>
+    <div th:if="${#lists.isEmpty(menuItems)}" class="empty-state" style="padding:1.5rem">
+      <p>No menu items yet. Add one above.</p>
+    </div>
+    <table th:if="${!#lists.isEmpty(menuItems)}">
+      <thead><tr><th>Name</th><th>Price</th><th>Available</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr th:each="item : ${menuItems}">
+          <td th:text="${item.name}"></td>
+          <td th:text="${'₹' + #numbers.formatDecimal(item.price,1,2)}"></td>
+          <td>
+            <span th:if="${item.availability}" class="badge badge-delivered">Yes</span>
+            <span th:unless="${item.availability}" class="badge badge-cancelled">No</span>
+          </td>
+          <td>
+            <!-- FIX: use data-* attributes instead of th:onclick (Thymeleaf 3.1 security) -->
+            <button class="btn btn-outline btn-sm edit-btn"
+                    th:data-id="${item.itemId}"
+                    th:data-name="${item.name}"
+                    th:data-price="${item.price}"
+                    th:data-avail="${item.availability}">Edit</button>
+            <form method="post" style="display:inline"
+                  th:action="@{/owner/menu/{id}/delete(id=${item.itemId})}">
+              <input type="hidden" name="restaurantId" th:value="${restaurant.restaurantId}"/>
+              <button class="btn btn-danger btn-sm"
+                      onclick="return confirm('Delete this item?')">Delete</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div id="editModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:1.8rem;width:100%;max-width:420px;margin:0 1rem">
+    <h3 style="margin-bottom:1rem">Edit Menu Item</h3>
+    <form method="post" id="editForm">
+      <input type="hidden" name="restaurantId" th:value="${restaurant.restaurantId}"/>
+      <div class="form-group"><label>Name</label><input type="text" name="name" id="editName" required/></div>
+      <div class="form-group"><label>Price (₹)</label><input type="number" name="price" id="editPrice" step="0.5" required/></div>
+      <div class="form-group">
+        <label>Available</label>
+        <select name="availability" id="editAvail">
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:.6rem;justify-content:flex-end">
+        <button type="button" class="btn btn-outline" id="cancelEditBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Use event delegation on data-* attributes - no th:onclick needed
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.edit-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var id    = this.getAttribute('data-id');
+      var name  = this.getAttribute('data-name');
+      var price = this.getAttribute('data-price');
+      var avail = this.getAttribute('data-avail');
+      document.getElementById('editModal').style.display = 'flex';
+      document.getElementById('editName').value  = name;
+      document.getElementById('editPrice').value = price;
+      document.getElementById('editAvail').value = avail === 'true' ? 'true' : 'false';
+      document.getElementById('editForm').action = '/owner/menu/' + id + '/update';
+    });
+  });
+  document.getElementById('cancelEditBtn').addEventListener('click', function() {
+    document.getElementById('editModal').style.display = 'none';
+  });
+});
+</script>
+</body>
+</html>

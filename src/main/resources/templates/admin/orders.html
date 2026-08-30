@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Monitor Orders – OFDS</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div class="navbar">
+  <a class="brand" href="#">🍔 OFDS</a>
+  <nav>
+    <a th:href="@{/admin/dashboard}">Dashboard</a>
+    <a th:href="@{/admin/users}">Users</a>
+    <a th:href="@{/admin/restaurants}">Restaurants</a>
+    <a th:href="@{/admin/orders}" class="active">Orders</a>
+    <a th:href="@{/admin/reports}">Reports</a>
+  </nav>
+  <form method="post" th:action="@{/logout}" style="display:inline">
+    <button class="logout">Logout</button>
+  </form>
+</div>
+<div class="container">
+  <p class="page-title">Monitor Orders</p>
+  <div th:if="${param.assigned}" class="alert alert-success">Delivery partner assigned!</div>
+  <div class="card">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Customer</th><th>Restaurant</th><th>Amount</th><th>Status</th><th>Partner</th><th>Assign</th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="order : ${orders}">
+          <td th:text="${order.orderId}"></td>
+          <td th:text="${order.customer.name}"></td>
+          <td th:text="${order.restaurant.name}"></td>
+          <td th:text="'₹' + ${#numbers.formatDecimal(order.totalAmount,1,2)}"></td>
+          <td><span th:class="${'badge badge-' + #strings.toLowerCase(order.status)}"
+                    th:text="${order.status}"></span></td>
+          <td th:text="${order.deliveryPartner != null ? order.deliveryPartner.name : '—'}"></td>
+          <td>
+            <form th:if="${order.status.name() == 'PREPARING' and order.deliveryPartner == null}"
+                  method="post" th:action="@{/admin/orders/{id}/assign(id=${order.orderId})}"
+                  style="display:flex;gap:.4rem">
+              <select name="partnerId" style="font-size:.82rem;padding:4px 8px;border:1px solid var(--border);border-radius:5px">
+                <option value="">Select…</option>
+                <option th:each="dp : ${availablePartners}"
+                        th:value="${dp.userId}"
+                        th:text="${dp.name} + ' (' + ${dp.vehicleType} + ')'"></option>
+              </select>
+              <button class="btn btn-primary btn-sm">Assign</button>
+            </form>
+            <span th:unless="${order.status.name() == 'PREPARING' and order.deliveryPartner == null}"
+                  style="color:var(--text-muted);font-size:.85rem">—</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div th:if="${#lists.isEmpty(orders)}" class="empty-state" style="padding:2rem">
+      <div class="icon">📋</div><p>No orders yet.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

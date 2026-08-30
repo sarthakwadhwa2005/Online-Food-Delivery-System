@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Profile – OFDS</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div class="navbar">
+  <a class="brand" href="#">🍔 OFDS</a>
+  <nav>
+    <a th:href="@{/delivery/dashboard}">Dashboard</a>
+    <a th:href="@{/delivery/requests}">Requests</a>
+    <a th:href="@{/delivery/orders}">My Deliveries</a>
+    <a th:href="@{/delivery/profile}" class="active">Profile</a>
+  </nav>
+  <form method="post" th:action="@{/logout}" style="display:inline">
+    <button class="logout">Logout</button>
+  </form>
+</div>
+<div class="container">
+  <p class="page-title">My Profile</p>
+  <div th:if="${param.updated}" class="alert alert-success">Profile updated!</div>
+  <div class="card" style="max-width:480px">
+    <form method="post" th:action="@{/delivery/profile/update}">
+      <div class="form-group"><label>Full Name</label><input type="text" name="name" th:value="${partner.name}" required/></div>
+      <div class="form-group"><label>Email</label><input type="email" th:value="${partner.email}" disabled style="background:#f0f0f0"/></div>
+      <div class="form-group"><label>Phone</label><input type="text" name="phone" th:value="${partner.phone}"/></div>
+      <div class="form-group">
+        <label>Vehicle Type</label>
+        <input type="text" th:value="${partner.vehicleType}" disabled style="background:#f0f0f0"/>
+      </div>
+      <div class="form-group">
+        <label>Availability</label>
+        <span th:if="${partner.availabilityStatus}" class="badge badge-delivered">Available</span>
+        <span th:unless="${partner.availabilityStatus}" class="badge badge-out">On Delivery</span>
+      </div>
+      <button class="btn btn-primary" type="submit">Update Profile</button>
+    </form>
+  </div>
+</div>
+</body>
+</html>

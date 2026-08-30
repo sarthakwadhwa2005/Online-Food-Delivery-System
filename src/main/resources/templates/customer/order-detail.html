@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Order Detail – OFDS</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div class="navbar">
+  <a class="brand" href="#">🍔 OFDS</a>
+  <nav>
+    <a th:href="@{/customer/dashboard}">Home</a>
+    <a th:href="@{/customer/restaurants}">Restaurants</a>
+    <a th:href="@{/customer/orders}" class="active">My Orders</a>
+    <a th:href="@{/customer/profile}">Profile</a>
+  </nav>
+  <form method="post" th:action="@{/logout}" style="display:inline">
+    <button class="logout">Logout</button>
+  </form>
+</div>
+<div class="container">
+  <div th:if="${param.success}" class="alert alert-success">✅ Order placed successfully!</div>
+  <a th:href="@{/customer/orders}" class="btn btn-outline btn-sm" style="margin-bottom:1rem">← My Orders</a>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem">
+      <div>
+        <h2>Order #<span th:text="${order.orderId}"></span></h2>
+        <p style="color:var(--text-muted);font-size:.88rem" th:text="${order.orderDate}"></p>
+        <p style="margin-top:.3rem">Restaurant: <strong th:text="${order.restaurant.name}"></strong></p>
+      </div>
+      <div>
+        <span th:class="${'badge badge-' + #strings.toLowerCase(order.status)}"
+              th:text="${order.status}"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Items Ordered</div>
+      <div th:each="item : ${order.items}" class="menu-item">
+        <span class="item-name" th:text="${item.menuItem.name}"></span>
+        <span style="color:var(--text-muted);font-size:.88rem">× <span th:text="${item.quantity}"></span></span>
+        <span class="item-price" th:text="'₹' + ${#numbers.formatDecimal(item.subtotal,1,2)}"></span>
+      </div>
+      <div style="display:flex;justify-content:flex-end;padding-top:.8rem;font-size:1.1rem;font-weight:700;color:var(--primary)">
+        Total: ₹<span th:text="${#numbers.formatDecimal(order.totalAmount,1,2)}"></span>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-title">Payment</div>
+        <div th:if="${order.payment}">
+          <p>Method: <strong th:text="${order.payment.method}"></strong></p>
+          <p>Amount: <strong th:text="'₹' + ${#numbers.formatDecimal(order.payment.amount,1,2)}"></strong></p>
+          <p>Status: <span th:class="${'badge badge-' + #strings.toLowerCase(order.payment.paymentStatus)}"
+                           th:text="${order.payment.paymentStatus}"></span></p>
+        </div>
+      </div>
+      <div class="card" th:if="${order.deliveryPartner}">
+        <div class="card-title">Delivery Partner</div>
+        <p th:text="${order.deliveryPartner.name}"></p>
+        <p style="color:var(--text-muted);font-size:.88rem" th:text="${order.deliveryPartner.vehicleType}"></p>
+      </div>
+      <div class="card" th:if="${order.status.name() == 'PLACED' || order.status.name() == 'PREPARING'}">
+        <form method="post" th:action="@{/customer/order/{id}/cancel(id=${order.orderId})}">
+          <button class="btn btn-danger" style="width:100%"
+                  onclick="return confirm('Cancel this order?')">Cancel Order</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

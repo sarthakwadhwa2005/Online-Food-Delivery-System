@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>My Restaurants – OFDS</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div class="navbar">
+  <a class="brand" href="#">🍔 OFDS</a>
+  <nav>
+    <a th:href="@{/owner/dashboard}">Dashboard</a>
+    <a th:href="@{/owner/restaurants}" class="active">My Restaurants</a>
+  </nav>
+  <form method="post" th:action="@{/logout}" style="display:inline">
+    <button class="logout">Logout</button>
+  </form>
+</div>
+<div class="container">
+  <p class="page-title">My Restaurants</p>
+  <div th:if="${param.created}" class="alert alert-success">Restaurant created!</div>
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-title">Add New Restaurant</div>
+    <form method="post" th:action="@{/owner/restaurant/create}" style="display:flex;gap:.6rem;flex-wrap:wrap">
+      <input type="text" name="name" placeholder="Restaurant name" style="flex:1" required/>
+      <input type="text" name="address" placeholder="Address" style="flex:2" required/>
+      <button class="btn btn-primary" type="submit">Create</button>
+    </form>
+  </div>
+  <div th:if="${#lists.isEmpty(restaurants)}" class="empty-state">
+    <div class="icon">🏪</div><p>No restaurants yet.</p>
+  </div>
+  <div th:each="r : ${restaurants}" class="card rest-card" style="margin-bottom:.8rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+      <div>
+        <h3 th:text="${r.name}"></h3>
+        <p class="address">📍 <span th:text="${r.address}"></span></p>
+        <span class="rating" th:text="${#numbers.formatDecimal(r.rating,1,1)} + ' ★'">0.0 ★</span>
+      </div>
+      <div style="display:flex;gap:.5rem">
+        <a th:href="@{/owner/restaurant/{id}/menu(id=${r.restaurantId})}" class="btn btn-outline btn-sm">Manage Menu</a>
+        <a th:href="@{/owner/restaurant/{id}/orders(id=${r.restaurantId})}" class="btn btn-primary btn-sm">View Orders</a>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

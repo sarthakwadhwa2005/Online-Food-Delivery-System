@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Restaurants – OFDS</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div class="navbar">
+  <a class="brand" href="#">🍔 OFDS</a>
+  <nav>
+    <a th:href="@{/admin/dashboard}">Dashboard</a>
+    <a th:href="@{/admin/users}">Users</a>
+    <a th:href="@{/admin/restaurants}" class="active">Restaurants</a>
+    <a th:href="@{/admin/orders}">Orders</a>
+    <a th:href="@{/admin/reports}">Reports</a>
+  </nav>
+  <form method="post" th:action="@{/logout}" style="display:inline">
+    <button class="logout">Logout</button>
+  </form>
+</div>
+<div class="container">
+  <p class="page-title">Manage Restaurants</p>
+  <div th:if="${param.deleted}" class="alert alert-info">Restaurant deleted.</div>
+  <div class="card">
+    <table>
+      <thead><tr><th>ID</th><th>Name</th><th>Address</th><th>Owner</th><th>Rating</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr th:each="r : ${restaurants}">
+          <td th:text="${r.restaurantId}"></td>
+          <td th:text="${r.name}"></td>
+          <td th:text="${r.address}"></td>
+          <td th:text="${r.owner.name}"></td>
+          <td th:text="${#numbers.formatDecimal(r.rating,1,1)} + ' ★'"></td>
+          <td>
+            <form method="post" th:action="@{/admin/restaurants/{id}/delete(id=${r.restaurantId})}" style="display:inline">
+              <button class="btn btn-danger btn-sm" onclick="return confirm('Delete restaurant?')">Delete</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

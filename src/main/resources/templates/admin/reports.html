@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Reports – OFDS</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div class="navbar">
+  <a class="brand" href="#">🍔 OFDS</a>
+  <nav>
+    <a th:href="@{/admin/dashboard}">Dashboard</a>
+    <a th:href="@{/admin/users}">Users</a>
+    <a th:href="@{/admin/restaurants}">Restaurants</a>
+    <a th:href="@{/admin/orders}">Orders</a>
+    <a th:href="@{/admin/reports}" class="active">Reports</a>
+  </nav>
+  <form method="post" th:action="@{/logout}" style="display:inline">
+    <button class="logout">Logout</button>
+  </form>
+</div>
+<div class="container">
+  <p class="page-title">System Reports</p>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-val" th:text="'₹' + ${#numbers.formatDecimal(totalRevenue,1,0)}">₹0</div>
+      <div class="stat-label">Total Revenue</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" th:text="${totalOrders}">0</div>
+      <div class="stat-label">Total Orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" th:text="${deliveredOrders}">0</div>
+      <div class="stat-label">Delivered</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" th:text="${cancelledOrders}">0</div>
+      <div class="stat-label">Cancelled</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Restaurant Performance</div>
+      <table>
+        <thead><tr><th>Restaurant</th><th>Rating</th><th>Owner</th></tr></thead>
+        <tbody>
+          <tr th:each="r : ${restaurants}">
+            <td th:text="${r.name}"></td>
+            <td th:text="${#numbers.formatDecimal(r.rating,1,1)} + ' ★'"></td>
+            <td th:text="${r.owner.name}"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Delivery Partners</div>
+      <table>
+        <thead><tr><th>Name</th><th>Vehicle</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr th:each="dp : ${partners}">
+            <td th:text="${dp.name}"></td>
+            <td th:text="${dp.vehicleType}"></td>
+            <td>
+              <span th:if="${dp.availabilityStatus}" class="badge badge-delivered">Available</span>
+              <span th:unless="${dp.availabilityStatus}" class="badge badge-out">On Delivery</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1rem">
+    <div class="card-title">Payment Summary</div>
+    <table>
+      <thead><tr><th>Payment ID</th><th>Method</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr th:each="p : ${payments}">
+          <td th:text="${p.paymentId}"></td>
+          <td th:text="${p.method}"></td>
+          <td th:text="'₹' + ${#numbers.formatDecimal(p.amount,1,2)}"></td>
+          <td><span th:class="${'badge badge-' + #strings.toLowerCase(p.paymentStatus)}"
+                    th:text="${p.paymentStatus}"></span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

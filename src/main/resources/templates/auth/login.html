@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"/>
+<title>Login – OFDS</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">🍔 OFDS</div>
+    <h1>Welcome back</h1>
+    <p class="subtitle">Sign in to your account</p>
+
+    <div th:if="${param.error}"    class="alert alert-danger">Invalid email or password.</div>
+    <div th:if="${param.logout}"   class="alert alert-success">Logged out successfully.</div>
+    <div th:if="${param.registered}" class="alert alert-success">Registration successful! Please log in.</div>
+
+    <form method="post" action="/login">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="username" placeholder="you@example.com" required autofocus/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" placeholder="••••••••" required/>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.5rem">Sign In</button>
+    </form>
+
+    <p style="text-align:center;margin-top:1.2rem;font-size:.9rem;color:var(--text-muted)">
+      No account? <a th:href="@{/register}" style="color:var(--primary)">Register here</a>
+    </p>
+
+    <div style="margin-top:1.5rem;padding:1rem;background:#f7f7f7;border-radius:8px;font-size:.8rem;color:var(--text-muted)">
+      <strong>Demo logins (password: pass123)</strong><br/>
+      Customer : sarthak@ofds.com<br/>
+      Owner    : shravan@ofds.com<br/>
+      Delivery : ravi@ofds.com<br/>
+      Admin    : admin@ofds.com &nbsp;(admin123)
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Orders – OFDS</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div class="navbar">
+  <a class="brand" href="#">🍔 OFDS</a>
+  <nav>
+    <a th:href="@{/owner/dashboard}">Dashboard</a>
+    <a th:href="@{/owner/restaurants}" class="active">My Restaurants</a>
+  </nav>
+  <form method="post" th:action="@{/logout}" style="display:inline">
+    <button class="logout">Logout</button>
+  </form>
+</div>
+<div class="container">
+  <a th:href="@{/owner/dashboard}" class="btn btn-outline btn-sm" style="margin-bottom:1rem">← Dashboard</a>
+  <div th:if="${param.accepted}" class="alert alert-success">Order accepted!</div>
+  <div th:if="${param.updated}"  class="alert alert-success">Status updated!</div>
+
+  <p class="page-title">Orders – <span th:text="${restaurant.name}"></span></p>
+
+  <div th:if="${#lists.isEmpty(orders)}" class="empty-state">
+    <div class="icon">📋</div><p>No orders yet.</p>
+  </div>
+
+  <div th:each="order : ${orders}" class="card" style="margin-bottom:.8rem">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem">
+      <div>
+        <strong>Order #<span th:text="${order.orderId}"></span></strong>
+        — Customer: <span th:text="${order.customer.name}"></span>
+        <div style="font-size:.84rem;color:var(--text-muted)">
+          <span th:text="${order.orderDate}"></span>
+          · ₹<span th:text="${#numbers.formatDecimal(order.totalAmount,1,2)}"></span>
+        </div>
+        <div style="margin-top:.4rem;font-size:.84rem">
+          <span th:each="item : ${order.items}">
+            <span th:text="${item.menuItem.name}"></span> ×<span th:text="${item.quantity}"></span>&nbsp;
+          </span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.5rem">
+        <span th:class="${'badge badge-' + #strings.toLowerCase(order.status)}"
+              th:text="${order.status}"></span>
+        <!-- Accept if PLACED -->
+        <form th:if="${order.status.name() == 'PLACED'}" method="post"
+              th:action="@{/owner/order/{id}/accept(id=${order.orderId})}">
+          <input type="hidden" name="restaurantId" th:value="${restaurant.restaurantId}"/>
+          <button class="btn btn-success btn-sm">Accept Order</button>
+        </form>
+        <!-- Update status if PREPARING -->
+        <form th:if="${order.status.name() == 'PREPARING'}" method="post"
+              th:action="@{/owner/order/{id}/status(id=${order.orderId})}"
+              style="display:flex;gap:.4rem">
+          <input type="hidden" name="restaurantId" th:value="${restaurant.restaurantId}"/>
+          <select name="status" style="font-size:.82rem;padding:4px 8px">
+            <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+          </select>
+          <button class="btn btn-primary btn-sm">Update</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
