@@ -1,10 +1,10 @@
-﻿# ðŸ” Online Food Delivery System (OFDS)
+﻿#  Online Food Delivery System (OFDS)
 
 > A full-featured, multi-role web application simulating a complete food ordering, restaurant management, delivery logistics, and payment processing ecosystem built with **Java 17**, **Spring Boot 3**, **Spring Security**, **JPA / Hibernate**, **PostgreSQL**, and **Thymeleaf**.
 
 ---
 
-## ðŸ“‘ Table of Contents
+##  Table of Contents
 1. [About the System & How It Works](#-about-the-system--how-it-works)
 2. [End-to-End System Workflow](#-end-to-end-system-workflow)
 3. [User Roles & Key Features](#-user-roles--key-features)
@@ -18,7 +18,7 @@
 
 ---
 
-## ðŸŒŸ About the System & How It Works
+##  About the System & How It Works
 
 The **Online Food Delivery System (OFDS)** is an interactive food delivery platform connecting four core actors:
 - **Customers**: Browse dining spots, explore live menus, customize orders, simulate digital payments, and track meal delivery status.
@@ -26,7 +26,7 @@ The **Online Food Delivery System (OFDS)** is an interactive food delivery platf
 - **Delivery Partners**: Accept open delivery dispatches, manage active orders, and fulfill deliveries.
 - **Administrators**: Monitor system-wide operations, audit user accounts and restaurants, manage delivery driver assignments, and generate financial reports.
 
-### âš™ï¸ Core Working Principles
+###  Core Working Principles
 1. **Separation of Concerns**: Controllers handle web requests, service layers manage business logic, repositories handle persistence, and custom design patterns encapsulate complex workflows.
 2. **Event-Driven Status Updates**: Order lifecycle state transitions trigger real-time observer notifications to all interested parties (Customer, Restaurant, Delivery Partner).
 3. **Flexible Payment Processing**: Modular strategy pattern structure allows plug-and-play payment methods (UPI, Credit Card, Debit Card, Wallet) with realistic mock processing delays and validation.
@@ -34,7 +34,7 @@ The **Online Food Delivery System (OFDS)** is an interactive food delivery platf
 
 ---
 
-## ðŸ”„ End-to-End System Workflow
+##  End-to-End System Workflow
 
 ### 1. Order Lifecycle State Diagram
 ```mermaid
@@ -100,30 +100,30 @@ sequenceDiagram
 
 ---
 
-## ðŸ‘¥ User Roles & Key Features
+##  User Roles & Key Features
 
-### 1. ðŸ‘¤ Customer (`ROLE_CUSTOMER`)
+### 1.  Customer (`ROLE_CUSTOMER`)
 - **Restaurant Discovery**: Search restaurants by name, address, or cuisine; filter and view live customer ratings.
 - **Interactive Cart & Menu**: Browse dynamic menus, customize item quantities, and review calculated subtotals.
 - **Multi-Method Checkout**: Pay via UPI, Credit Card, Debit Card, or In-App Wallet with validation checks.
-- **Live Order Tracking**: Track real-time progress (`PLACED` âž” `PREPARING` âž” `OUT_FOR_DELIVERY` âž” `DELIVERED`).
+- **Live Order Tracking**: Track real-time progress (`PLACED`  `PREPARING`  `OUT_FOR_DELIVERY`  `DELIVERED`).
 - **Order History & Cancellation**: View complete past order log; cancel orders before kitchen preparation begins.
 - **Ratings & Reviews**: Rate restaurants after delivery to update platform averages.
 - **Profile Management**: Update delivery address, phone number, and account details.
 
-### 2. ðŸª Restaurant Owner (`ROLE_RESTAURANT_OWNER`)
+### 2.  Restaurant Owner (`ROLE_RESTAURANT_OWNER`)
 - **Branch Management**: Register and configure restaurant profiles and locations.
 - **Menu Management**: Add new menu items, update prices, modify item names, and toggle item availability (in-stock / out-of-stock).
 - **Live Kitchen Feed**: View incoming pending orders for owned restaurant branches.
 - **Order Handling**: Accept new orders and transition statuses from `PLACED` to `PREPARING`.
 
-### 3. ðŸ›µ Delivery Partner (`ROLE_DELIVERY_PARTNER`)
+### 3.  Delivery Partner (`ROLE_DELIVERY_PARTNER`)
 - **Delivery Request Pool**: View unassigned orders ready for dispatch.
 - **Task Acceptance**: Accept delivery tasks directly from the driver dashboard.
 - **Delivery Fulfillment**: Mark assigned orders as `OUT_FOR_DELIVERY` and `DELIVERED`.
 - **Driver Profile**: Update contact information and vehicle type (`BIKE`, `SCOOTER`, `CAR`, `BICYCLE`).
 
-### 4. ðŸ›¡ï¸ System Administrator (`ROLE_ADMIN`)
+### 4.  System Administrator (`ROLE_ADMIN`)
 - **Central Analytics Dashboard**: Real-time stats on total platform users, active restaurants, total orders placed, and gross platform revenue.
 - **User Management**: View all registered users across all roles and remove accounts when necessary.
 - **Restaurant Audit**: View and manage all platform restaurant listings.
@@ -132,7 +132,7 @@ sequenceDiagram
 
 ---
 
-## ðŸŽ¨ Object-Oriented Design Patterns (GoF)
+##  Object-Oriented Design Patterns (GoF)
 
 The project implements 6 classical **Gang of Four (GoF)** design patterns to ensure clean, decoupled, and extensible architecture:
 
@@ -147,7 +147,7 @@ The project implements 6 classical **Gang of Four (GoF)** design patterns to ens
 
 ---
 
-## ðŸ—„ï¸ Database Schema & ER Diagram
+##  Database Schema & ER Diagram
 
 ```mermaid
 erDiagram
@@ -236,7 +236,7 @@ erDiagram
 
 ---
 
-## ðŸ› ï¸ Technology Stack
+##  Technology Stack
 
 | Layer | Technology | Description |
 |---|---|---|
@@ -252,55 +252,55 @@ erDiagram
 
 ---
 
-## ðŸ“ Project Directory Structure
+##  Project Directory Structure
 
 ```text
 Online_food_delivery_system-main/
-â”œâ”€â”€ pom.xml                               # Maven build configuration & dependencies
-â”œâ”€â”€ mvnw / mvnw.cmd                       # Maven wrapper executables
-â””â”€â”€ src/
-    â””â”€â”€ main/
-        â”œâ”€â”€ java/com/ofds/
-        â”‚   â”œâ”€â”€ OfdsApplication.java      # Application main entry point
-        â”‚   â”œâ”€â”€ config/
-        â”‚   â”‚   â”œâ”€â”€ DataSeeder.java       # Auto-seeds demo accounts & menus
-        â”‚   â”‚   â””â”€â”€ SecurityConfig.java   # Spring Security & role route mappings
-        â”‚   â”œâ”€â”€ controller/               # MVC Controllers
-        â”‚   â”‚   â”œâ”€â”€ AdminController.java
-        â”‚   â”‚   â”œâ”€â”€ AuthController.java
-        â”‚   â”‚   â”œâ”€â”€ CustomerController.java
-        â”‚   â”‚   â”œâ”€â”€ DeliveryPartnerController.java
-        â”‚   â”‚   â”œâ”€â”€ MockPaymentController.java
-        â”‚   â”‚   â””â”€â”€ RestaurantOwnerController.java
-        â”‚   â”œâ”€â”€ model/                    # Domain Entities & Enums
-        â”‚   â”‚   â”œâ”€â”€ User.java, Customer.java, RestaurantOwner.java, DeliveryPartner.java, Admin.java
-        â”‚   â”‚   â”œâ”€â”€ Restaurant.java, MenuItem.java
-        â”‚   â”‚   â”œâ”€â”€ Order.java, OrderItem.java, OrderStatus.java
-        â”‚   â”‚   â””â”€â”€ Payment.java, PaymentMethod.java, PaymentStatus.java, VehicleType.java
-        â”‚   â”œâ”€â”€ pattern/                  # GoF Design Patterns Implementation
-        â”‚   â”‚   â”œâ”€â”€ builder/OrderBuilder.java
-        â”‚   â”‚   â”œâ”€â”€ facade/OrderFacade.java
-        â”‚   â”‚   â”œâ”€â”€ factory/PaymentFactory.java
-        â”‚   â”‚   â”œâ”€â”€ observer/OrderNotifier.java, OrderObserver.java, etc.
-        â”‚   â”‚   â”œâ”€â”€ singleton/DatabaseManager.java
-        â”‚   â”‚   â””â”€â”€ strategy/PaymentStrategy.java, UPIPaymentStrategy.java, etc.
-        â”‚   â”œâ”€â”€ repository/               # Spring Data JPA Repositories
-        â”‚   â”‚   â”œâ”€â”€ UserRepository.java, CustomerRepository.java, AdminRepository.java, etc.
-        â”‚   â”‚   â”œâ”€â”€ RestaurantRepository.java, MenuItemRepository.java
-        â”‚   â”‚   â””â”€â”€ OrderRepository.java, PaymentRepository.java
-        â”‚   â””â”€â”€ service/                  # Business Services
-        â”‚       â”œâ”€â”€ UserService.java, RestaurantService.java
-        â”‚       â”œâ”€â”€ OrderService.java, PaymentService.java
-        â””â”€â”€ resources/
-            â”œâ”€â”€ application.properties    # Server & PostgreSQL connection configs
-            â”œâ”€â”€ db/postgresql-setup.sql   # PostgreSQL database initialization script
-            â”œâ”€â”€ static/css/style.css      # UI styles
-            â””â”€â”€ templates/                # Thymeleaf views (auth, customer, owner, delivery, admin, payment)
+ pom.xml                               # Maven build configuration & dependencies
+ mvnw / mvnw.cmd                       # Maven wrapper executables
+ src/
+     main/
+         java/com/ofds/
+            OfdsApplication.java      # Application main entry point
+            config/
+               DataSeeder.java       # Auto-seeds demo accounts & menus
+               SecurityConfig.java   # Spring Security & role route mappings
+            controller/               # MVC Controllers
+               AdminController.java
+               AuthController.java
+               CustomerController.java
+               DeliveryPartnerController.java
+               MockPaymentController.java
+               RestaurantOwnerController.java
+            model/                    # Domain Entities & Enums
+               User.java, Customer.java, RestaurantOwner.java, DeliveryPartner.java, Admin.java
+               Restaurant.java, MenuItem.java
+               Order.java, OrderItem.java, OrderStatus.java
+               Payment.java, PaymentMethod.java, PaymentStatus.java, VehicleType.java
+            pattern/                  # GoF Design Patterns Implementation
+               builder/OrderBuilder.java
+               facade/OrderFacade.java
+               factory/PaymentFactory.java
+               observer/OrderNotifier.java, OrderObserver.java, etc.
+               singleton/DatabaseManager.java
+               strategy/PaymentStrategy.java, UPIPaymentStrategy.java, etc.
+            repository/               # Spring Data JPA Repositories
+               UserRepository.java, CustomerRepository.java, AdminRepository.java, etc.
+               RestaurantRepository.java, MenuItemRepository.java
+               OrderRepository.java, PaymentRepository.java
+            service/                  # Business Services
+                UserService.java, RestaurantService.java
+                OrderService.java, PaymentService.java
+         resources/
+             application.properties    # Server & PostgreSQL connection configs
+             db/postgresql-setup.sql   # PostgreSQL database initialization script
+             static/css/style.css      # UI styles
+             templates/                # Thymeleaf views (auth, customer, owner, delivery, admin, payment)
 ```
 
 ---
 
-## ðŸš€ Setup & Installation Guide
+##  Setup & Installation Guide
 
 ### Prerequisites
 - **Java Development Kit (JDK)**: Version 17 or higher
@@ -384,4 +384,9 @@ when `spring.jpa.hibernate.ddl-auto=update` is enabled. Payment processing is a
 local simulation; no real card, UPI, wallet, or banking transaction is performed
 and payment credentials are not persisted.
 
+
+
+## License
+
+MIT, see [LICENSE](LICENSE).
 
